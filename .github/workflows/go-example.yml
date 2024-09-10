@@ -4,55 +4,13 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '*/15 * * * 1-6'  # Executa a cada 15 minutos de segunda a sábado
 
 env:
   FILE_NAME: hello-server
 
 jobs:
-  BuildGo:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    
-    - name: Set up Go environment
-      uses: actions/setup-go@v2
-      with:
-        go-version: '1.15'
-        
-    - name: Build for Linux
-      run: go build ${{ env.FILE_NAME }}.go
-      
-    - name: Build for Windows
-      run: GOOS=windows GOARCH=amd64 go build ${{ env.FILE_NAME }}.go
-
-  UploadArtifacts:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Upload artifact for Linux
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: linux
-        path: ./${{ env.FILE_NAME }}
-
-    - name: Upload artifact for Windows
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: windows
-        path: ./${{ env.FILE_NAME }}.exe
-
-name: Go Build and Upload
-
-on:
-  push:
-    branches:
-      - main
-  schedule:
-    - cron: '*/15 * * * 1-6'  # Executa a cada 15 minutos de segunda a sábado
-
-    jobs:
   build-go:
     runs-on: ubuntu-latest
     steps:
@@ -63,7 +21,7 @@ on:
         uses: actions/setup-go@v2
         with:
           go-version: '1.15'
-          
+
       - name: Build for Linux
         run: go build ${{ env.FILE_NAME }}.go
 
@@ -75,7 +33,7 @@ on:
     needs: build-go
     steps:
       - name: Upload artifact for Linux
-        uses: actions/upload-artifact@v1.0.0
+        uses: actions/upload-artifact@v1
         with:
           name: linux
           path: ./${{ env.FILE_NAME }}
@@ -85,7 +43,7 @@ on:
     needs: build-go
     steps:
       - name: Upload artifact for Windows
-        uses: actions/upload-artifact@v1.0.0
+        uses: actions/upload-artifact@v1
         with:
           name: windows
           path: ./${{ env.FILE_NAME }}.exe
@@ -103,7 +61,7 @@ on:
           name: linux
 
       - name: Run the script on Linux
-        run: source ./run.sh
+        run: chmod +x ./run.sh && ./run.sh
 
   download-only-windows:
     runs-on: windows-latest
@@ -116,4 +74,3 @@ on:
         uses: actions/download-artifact@v2
         with:
           name: windows
-
